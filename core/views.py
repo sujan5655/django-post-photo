@@ -14,9 +14,20 @@ def profile(request,userid):
     return render(request,'profile.html',context)
 
 
-def view_profile(request):
-
-    return render(request,'profile_page.html')
+def view_profile(request,username):
+    try:
+      user=User.objects.get(username=username)
+    except User.DoesNotExist:
+       return HttpResponse('User with provided username does not exist')
+    posts=user.posts.all()
+    print(posts)
+    
+    context={
+        'user':user,
+        'posts':posts
+      
+    }
+    return render(request,'profile_page.html',context)
 
 def post_view(request):
 
@@ -35,7 +46,7 @@ def post_view(request):
             post_obj = form.save(commit=False) # doesn't save in database
             post_obj.user = request.user
             post_obj.save()
-            return redirect('/view_profile/')
+            
 
 
     context = {
@@ -44,3 +55,23 @@ def post_view(request):
 
 
     return render(request,'post.html',context)
+def PostofUser(request):
+    
+    print(request.GET)
+    search=request.GET.get('search')
+    if search is not None and search!="":
+        posts=Post.objects.filter(title__icontains=search)
+    else: 
+        posts=Post.objects.all()   
+    context={
+        'posts':posts,
+        'search':search
+    }
+    return render(request,'ViewPost.html',context)
+def viewPostDetail(request,id):
+    post=Post.objects.get(id=id)
+    context={
+        'post':post
+    }
+
+    return render(request,'viewPostDetail.html',context)
